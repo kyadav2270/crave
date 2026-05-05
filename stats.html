@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRAVE — Live Stats</title>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{
+      background:#0a0612;color:#fff;
+      font-family:-apple-system,'Segoe UI',system-ui,sans-serif;
+      min-height:100vh;display:flex;align-items:center;justify-content:center;
+      padding:24px;
+    }
+    .wrap{max-width:600px;width:100%;text-align:center}
+    h1{
+      font-size:48px;font-weight:900;letter-spacing:1px;
+      background:linear-gradient(90deg,#cb202d,#f8cb46);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      margin-bottom:6px;
+    }
+    .sub{color:rgba(255,255,255,.5);font-size:14px;margin-bottom:36px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+    .card{
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;padding:24px 16px;
+    }
+    .lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px}
+    .num{font-size:48px;font-weight:900;color:#fff}
+    .num.loading{color:rgba(255,255,255,.2)}
+    .funnel{
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;padding:20px;text-align:left;
+    }
+    .funnel h3{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:12px}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .row:last-child{border:0}
+    .row span:first-child{color:rgba(255,255,255,.6)}
+    .row span:last-child{font-weight:700}
+    a.play{
+      display:inline-block;margin-top:24px;padding:14px 28px;
+      background:linear-gradient(135deg,#cb202d,#f8cb46);
+      color:#fff;text-decoration:none;border-radius:14px;
+      font-weight:700;font-size:14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>CRAVE</h1>
+    <div class="sub">Live community stats</div>
+
+    <div class="grid">
+      <div class="card"><div class="lbl">👀 Visits</div><div class="num loading" id="visits">—</div></div>
+      <div class="card"><div class="lbl">▶ Plays Started</div><div class="num loading" id="starts">—</div></div>
+      <div class="card"><div class="lbl">🏁 Games Completed</div><div class="num loading" id="completes">—</div></div>
+      <div class="card"><div class="lbl">⬇ Videos Downloaded</div><div class="num loading" id="downloads">—</div></div>
+    </div>
+
+    <div class="funnel">
+      <h3>Conversion funnel</h3>
+      <div class="row"><span>Visit → Play</span><span id="r1">—</span></div>
+      <div class="row"><span>Play → Complete</span><span id="r2">—</span></div>
+      <div class="row"><span>Complete → Download</span><span id="r3">—</span></div>
+    </div>
+
+    <a href="./" class="play">▶ Play CRAVE</a>
+  </div>
+
+<script>
+const NS='crave-kyadav2270';
+async function get(k){
+  try{
+    const r=await fetch(`https://abacus.jasoncameron.dev/get/${NS}/${k}`);
+    const j=await r.json();
+    return j.value||0;
+  }catch(e){return 0;}
+}
+function fmt(n){return n.toLocaleString();}
+function pct(a,b){if(!b)return '—';return Math.round(a/b*100)+'%';}
+(async()=>{
+  const [v,s,c,d]=await Promise.all([get('visits'),get('starts'),get('completes'),get('downloads')]);
+  document.getElementById('visits').textContent=fmt(v);
+  document.getElementById('starts').textContent=fmt(s);
+  document.getElementById('completes').textContent=fmt(c);
+  document.getElementById('downloads').textContent=fmt(d);
+  document.querySelectorAll('.num').forEach(el=>el.classList.remove('loading'));
+  document.getElementById('r1').textContent=pct(s,v);
+  document.getElementById('r2').textContent=pct(c,s);
+  document.getElementById('r3').textContent=pct(d,c);
+})();
+</script>
+</body>
+</html>
