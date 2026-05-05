@@ -887,10 +887,10 @@ function drawBackground(dt){
    HAND TRACKING
    ════════════════════════════════════════ */
 let mpHands=null, frameSending=false;
+/* mobile detection — hoisted so both MediaPipe init AND camera constraints can read it */
+const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
 try{
   mpHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
-  /* mobile = lighter model + lower thresholds for harder lighting/cameras */
-  const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
   mpHands.setOptions({
     maxNumHands: 2,
     modelComplexity: IS_MOBILE ? 0 : 1,
