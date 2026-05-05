@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#08060a" />
   <title>CRAVE — Zomato × Blinkit</title>
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
     body{
       background:#08060a;display:flex;align-items:center;justify-content:center;
       height:100vh;overflow:hidden;
@@ -26,6 +29,42 @@
       width:188px;max-height:95vh;overflow-y:auto;scrollbar-width:none;
     }
     #panel::-webkit-scrollbar{display:none}
+
+    /* ───────── MOBILE LAYOUT ───────── */
+    @media (max-width: 900px), (orientation: portrait) and (max-width: 1100px) {
+      body{
+        flex-direction:column;
+        height:100dvh;height:100vh;
+        align-items:stretch;justify-content:flex-start;
+        padding:6px;gap:6px;
+      }
+      #canvasWrap{
+        height:auto;width:auto;max-width:100%;
+        aspect-ratio:9/16;
+        max-height:calc(100dvh - 110px);
+        max-height:calc(100vh - 110px);
+        margin:0 auto;
+        border-radius:18px;
+      }
+      #panel{
+        width:100%;max-width:520px;margin:0 auto;
+        flex-direction:row;flex-wrap:wrap;gap:6px;
+        max-height:104px;overflow-y:auto;
+        align-content:flex-start;padding:0 4px;
+      }
+      /* hide non-essentials on mobile */
+      .brand-tag,#status,.hint,.sec-label,#bgGrid,.divider,
+      #camSelect,#safeBtn{display:none !important}
+      /* show essentials in a tight grid */
+      #panel .btn{flex:1 1 calc(33% - 6px); padding:11px 6px; font-size:12px; min-width:0}
+      #panel #recordBtn{flex:1 1 100%}
+      #panel #dlArea{flex:1 1 100%; gap:4px}
+      #panel #dlBtn{flex:1 1 100%; padding:11px 6px; font-size:12px}
+      #panel .dl-meta{display:none}
+      .row2{width:100%;display:flex;gap:5px}
+      .t-btn{padding:8px 4px; font-size:11px}
+      #muteBtn{flex:1 1 calc(50% - 3px); padding:9px 4px; font-size:11px}
+    }
 
     .brand-tag{
       padding:12px 8px;border-radius:14px;text-align:center;color:#fff;
