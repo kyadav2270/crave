@@ -169,6 +169,12 @@
 
 <video id="vid" playsinline webkit-playsinline muted autoplay style="display:none"></video>
 
+<!-- iOS audio unlock: silent loop primes the device into media-playback mode
+     so Web Audio sounds aren't muted by the iPhone's hardware silent switch -->
+<audio id="silentLoop" playsinline webkit-playsinline loop preload="auto"
+       src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//FJAhwBkgVw6q9PoIjLZNAvQQyPM1wAA4AGRmHEEswj3w5tOi4NRGvSILIRWFYABg00cZ4FpcFzEkdjEQwYYXQH0ABp0uKkCUDuMa7QrZmWTFjHd"
+       style="display:none"></audio>
+
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
 
 <script>
@@ -312,6 +318,19 @@ let cdNum=3, cdT=0;
    AUDIO  (with masterGain → speakers + recording)
    ════════════════════════════════════════ */
 let muted=false, audioCtx=null, masterGain=null, audioDest=null;
+let silentUnlocked=false;
+/* Play a silent <audio> loop to flip iOS from "ringer (silent switch)"
+   into "media playback" mode — without this, Web Audio is muted on iPhones
+   when the hardware silent switch is on. */
+function unlockSilentLoop(){
+  if(silentUnlocked) return;
+  const el=document.getElementById('silentLoop');
+  if(!el) return;
+  el.volume=0.001;
+  const p=el.play();
+  if(p&&p.then) p.then(()=>{silentUnlocked=true;}).catch(()=>{});
+  else silentUnlocked=true;
+}
 function getAC(){
   if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
   if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
@@ -320,7 +339,14 @@ function getAC(){
     masterGain.connect(audioCtx.destination);
     audioDest=audioCtx.createMediaStreamDestination();
     masterGain.connect(audioDest);
+    /* fire one tiny silent buffer to unlock iOS Web Audio */
+    try{
+      const buf=audioCtx.createBuffer(1,1,22050);
+      const src=audioCtx.createBufferSource();
+      src.buffer=buf; src.connect(audioCtx.destination); src.start(0);
+    }catch(_){}
   }
+  unlockSilentLoop();
   return audioCtx;
 }
 function audioOut(){ getAC(); return masterGain || (audioCtx&&audioCtx.destination); }
