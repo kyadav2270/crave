@@ -34,23 +34,26 @@
     @media (max-width: 900px), (orientation: portrait) and (max-width: 1100px) {
       body{
         flex-direction:column;
-        height:100dvh;height:100vh;
+        min-height:100dvh;min-height:100vh;height:auto;
         align-items:stretch;justify-content:flex-start;
-        padding:6px;gap:6px;
+        padding:6px;gap:6px;overflow:visible;
       }
       #canvasWrap{
-        height:auto;width:auto;max-width:100%;
+        /* HEIGHT-first sizing so panel below always fits */
+        height:calc(100dvh - 130px);
+        height:calc(100vh - 130px);
+        width:auto;max-width:calc(100vw - 12px);
         aspect-ratio:9/16;
-        max-height:calc(100dvh - 110px);
-        max-height:calc(100vh - 110px);
         margin:0 auto;
         border-radius:18px;
+        flex-shrink:0;
       }
       #panel{
         width:100%;max-width:520px;margin:0 auto;
         flex-direction:row;flex-wrap:wrap;gap:6px;
-        max-height:104px;overflow-y:auto;
+        max-height:none;overflow-y:visible;
         align-content:flex-start;padding:0 4px;
+        flex-shrink:0;
       }
       /* hide non-essentials on mobile */
       .brand-tag,#status,.hint,.sec-label,#bgGrid,.divider,
