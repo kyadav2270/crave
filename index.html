@@ -167,7 +167,7 @@
   </div>
 </div>
 
-<video id="vid" playsinline style="display:none"></video>
+<video id="vid" playsinline webkit-playsinline muted autoplay style="display:none"></video>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
 
@@ -889,7 +889,14 @@ function drawBackground(dt){
 let mpHands=null, frameSending=false;
 try{
   mpHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
-  mpHands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:.5,minTrackingConfidence:.4});
+  /* mobile = lighter model + lower thresholds for harder lighting/cameras */
+  const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
+  mpHands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: IS_MOBILE ? 0 : 1,
+    minDetectionConfidence: IS_MOBILE ? 0.3 : 0.5,
+    minTrackingConfidence:  IS_MOBILE ? 0.3 : 0.4,
+  });
   mpHands.onResults(r=>{
     handPts=[]; handsCount=0;
     if(!r.multiHandLandmarks)return;
@@ -923,8 +930,8 @@ async function startCameraStream(deviceId){
     if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop());
     const constraints={
       video: deviceId
-        ? {deviceId:{exact:deviceId}, width:{ideal:1920}, height:{ideal:1080}}
-        : {facingMode:'user', width:{ideal:1920}, height:{ideal:1080}},
+        ? {deviceId:{exact:deviceId}, width:{ideal: IS_MOBILE?720:1920}, height:{ideal: IS_MOBILE?1280:1080}}
+        : {facingMode:'user',          width:{ideal: IS_MOBILE?720:1920}, height:{ideal: IS_MOBILE?1280:1080}},
       audio:false
     };
     const s=await navigator.mediaDevices.getUserMedia(constraints);
@@ -1077,12 +1084,16 @@ function drawHUD(){
   if(doubleActive){ drawStatusPill(W/2, pwY, `⚡ 2× ${Math.ceil(doubleTimer)}s`, '#fbbf24'); pwY+=24; }
   if(freezeActive){ drawStatusPill(W/2, pwY, `🚀 ${Math.ceil(freezeTimer)}s`, '#74eeff'); }
 
-  /* ── BOTTOM BAR — single line hashtag, minimal ── */
+  /* ── BOTTOM BAR — hashtag + hand indicator ── */
   ctx.save();
   ctx.font='bold 13px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
   ctx.fillStyle=BRAND.accent;
   ctx.shadowColor='rgba(0,0,0,.85)'; ctx.shadowBlur=6;
   ctx.fillText(BRAND.hashtag, W/2, SAFE.y+SAFE.h-8);
+  /* hand status — left side, big enough to read on phone */
+  ctx.font='bold 11px Arial'; ctx.textAlign='left';
+  ctx.fillStyle = handsCount>0 ? '#55efc4' : '#ff8888';
+  ctx.fillText(handsCount>0 ? `🖐 ${handsCount} HAND${handsCount>1?'S':''}` : '🖐 SHOW YOUR HAND', SAFE.x+5, SAFE.y+SAFE.h-8);
   ctx.restore();
 
   /* REC dot */
